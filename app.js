@@ -42,3 +42,39 @@ const fetchMovieFromAPI = async (input)=>{
         console.log("Error Occurred :(", e);
     }
 }
+const editedMovie = {
+    //USE BTN CLICK VALUE TO CHOOSE THE MOVIE THAT IS EDITED
+    "Title": "Movie",
+    "id" : "5"
+};
+
+//FUNCTION: UPDATES MOVIE BASED ON MOVIE ID
+const updateMyMovies = (movie) => {
+    try{
+        fetch(`https://grass-orchid-breath.glitch.me/movies/${movie.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(movie),
+        }).then(getMyMovies);
+    } catch (e) {
+        console.log(`Error Occurred: ${e}`)
+    }
+}
+updateMyMovies(editedMovie)
+
+//FUNCTION DELETES MOVIE BASED ON MOVIE ID
+const deleteMyMovie = (id) => {
+    try{
+        fetch(`https://grass-orchid-breath.glitch.me/movies/${id}`, {
+            method: 'DELETE',
+        }).then(getMyMovies);
+    } catch (e) {
+        console.log("Error Occurred :(", e);
+    }
+}
+
+const renderMyMovies = () => {
+
+}
