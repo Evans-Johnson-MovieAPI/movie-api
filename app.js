@@ -6,7 +6,7 @@ const getMyMovies = async()=>{
     try {
         const res = await fetch("https://grass-orchid-breath.glitch.me/movies");
         const data = await res.json();
-        console.log(data);
+        return data;
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -62,7 +62,7 @@ const updateMyMovies = (movie) => {
         console.log(`Error Occurred: ${e}`)
     }
 }
-updateMyMovies(editedMovie)
+
 
 //FUNCTION DELETES MOVIE BASED ON MOVIE ID
 const deleteMyMovie = (id) => {
@@ -75,6 +75,24 @@ const deleteMyMovie = (id) => {
     }
 }
 
-const renderMyMovies = () => {
-
+const renderMyMovies = async () => {
+const flick = await getMyMovies()
+    console.log(flick)
+    let cards = document.querySelector('#cards')
+    cards.innerHTML = ""
+    flick.forEach(({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) => {
+        cards.innerHTML += `
+        <div class="card" style="width: 15rem;">
+          <img src=${Poster} class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">${Title}</h5>
+            <p class="card-text">Rated: ${Rated}</p>
+            <p class="card-text">Genre: ${Genre}</p>
+            <p class="card-text">Year: ${Year}</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+        `
+    })
 }
+renderMyMovies()
