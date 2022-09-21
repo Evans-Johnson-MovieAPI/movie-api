@@ -116,18 +116,39 @@ const renderMovies = async (movies, list) => {
     movies.forEach(({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) => {
         cards.innerHTML += `
         <div class="card" style="width: 15rem;" id="${imdbID}">
-          <img src=${Poster} class="card-img-top" alt="...">
-          <div class="card-body">
-            <h5 class="card-title">${Title}</h5>
-            <p class="card-text">Rated: ${Rated}</p>
-            <p class="card-text">Genre: ${Genre}</p>
-            <p class="card-text">Year: ${Year}</p>
-            <a href="#" class="btn btn-primary">View Details</a>
-          </div>
+              <img src=${Poster} class="card-img-top" alt="...">
+              <div class="card-body">
+                    <h5 class="card-title">${Title}</h5>
+                    <span style="font-size: 0.7em">${Rated}</span>
+                    <p class="card-text" style="font-size: 0.7em">Genre: ${Genre}</span></p>
+                    <!-- Button trigger modal -->
+                    <button type="button" id="${imdbID}" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
+                      View Details
+                    </button>
+            </div>
         </div>
         `
     })
+    addModalEffect();
 }
+
+const updateModal = async ({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) =>{
+    const modalTitle = document.querySelector('#ModalLabel');
+    const modalBody = document.querySelector('.modal-body');
+    modalTitle.textContent = `${Title}`;
+    modalBody.innerHTML = '';
+    modalBody.innerHTML = `
+            <img src=${Poster} class="card-img-top" style="height: 7rem; width: auto; float: left; padding-right:3rem" alt="...">
+            <h5>${Title}</h5>
+            <span style="font-size: 0.7em">${Rated}</span>
+            <p style="font-size: 0.7em">Genre: ${Genre}</span></p>
+            <p style="clear: left; padding-top:1rem">${Plot}</p>
+            <p>Director: ${Director}</p>
+            <p>Released: ${Year}</p>
+        </div>
+    `
+};
+
 
 //----------------------- RENDER MY MOVIES ONLOAD ------------------------
 (async () => {
@@ -157,8 +178,20 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
         const keyword = document.querySelector("#searchKeyword").value;
         (list.includes('discover') === true) ?
             await renderMovies(await fetchMoviesListFromAPI(keyword)) :
-            await renderMovies(await filterMyMovies(await fetchMyMovies(), keyword)) ;
+            await renderMovies(await filterMyMovies(await fetchMyMovies(), keyword));
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
 })
+
+// MODAL: UPDATE
+const addModalEffect = ()=>{
+    document.querySelectorAll('.modalBtn').forEach(btn => {
+        btn.addEventListener('click', async (e)=>{
+            const movie = await fetchMovieFromAPI(btn.id);
+            console.log(movie);
+            await updateModal(movie)
+        })
+        // await updateModal(movie);
+    })
+}
