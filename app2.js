@@ -61,6 +61,16 @@ const deleteMyMovie = (id) => {
     }
 }
 
+// SEARCH FUNCTION: Returns a filtered array
+// PROTOTYPE: searchMovies(array)
+const filterMyMovies = async (movies, keyword) =>{
+    console.log(keyword);
+    console.log(movies);
+    for (let i = 0; i < movies.length; i++){
+        console.log(Object.values(movies[i]))
+    }
+}
+
 //----------------------- MOVIES  API ------------------------
 
 // FETCH FUNCTION: Returns array, using keyword
@@ -99,38 +109,50 @@ const renderMovies = async (movies, list) => {
     cards.innerHTML = ""
     movies.forEach(({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) => {
         cards.innerHTML += `
-        <div class="card" style="width: 15rem;">
+        <div class="card" style="width: 15rem;" id="${imdbID}">
           <img src=${Poster} class="card-img-top" alt="...">
           <div class="card-body">
             <h5 class="card-title">${Title}</h5>
             <p class="card-text">Rated: ${Rated}</p>
             <p class="card-text">Genre: ${Genre}</p>
             <p class="card-text">Year: ${Year}</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
+            <a href="#" class="btn btn-primary">View Details</a>
           </div>
         </div>
         `
     })
 }
 
-// SEARCH FUNCTION: Returns a filtered array
-// PROTOTYPE: searchMovies(array)
-const searchMovies = (movies) =>{
-
-}
+//----------------------- RENDER MY MOVIES ONLOAD ------------------------
+(async ()=>{
+    await renderMovies(await fetchMyMovies());
+})();
 
 
 //----------------------- EVENT LISTENERS ------------------------
 
-// MY MOVIES IN NAVBAR
+// NAVBAR: MY MOVIES
 document.querySelector('#myMovies').addEventListener('click', async (e)=>{
     e.preventDefault();
     await renderMovies(await fetchMyMovies());
 })
 
-// DISCOVER MOVIES IN NAVBAR
+// NAVBAR: DISCOVER MOVIES
 document.querySelector('#discover').addEventListener('click', async (e)=>{
     e.preventDefault();
     await renderMovies(await fetchMoviesListFromAPI(), "discover");
 })
 
+// NAVBAR: SEARCH
+document.querySelector("#searchBtn").addEventListener('click', async (e)=>{
+    try {
+        e.preventDefault();
+        const list = document.querySelector('h1').innerText.toLowerCase();
+        const keyword = document.querySelector("#searchKeyword").value;
+        (list.includes('discover') === true) ?
+            await renderMovies(await fetchMoviesListFromAPI(keyword)) :
+            await filterMyMovies(await fetchMyMovies(), keyword);
+    } catch (e) {
+        console.log("Error Occurred :(", e);
+    }
+})
