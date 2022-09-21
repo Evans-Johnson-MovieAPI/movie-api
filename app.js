@@ -1,7 +1,16 @@
 //----------------------- MOVIES ------------------------
+const loader = document.querySelector('.loader-container')
+const timeout = () => {
+    loader.style.display = 'none';
+}
+window.addEventListener('load', () => {
+    setTimeout(timeout, 3000)
+})
 
 // FUNCTION: Displays My Movies
 // PROTOTYPE: getMyMovies();
+
+
 const getMyMovies = async()=>{
     try {
         const res = await fetch("https://grass-orchid-breath.glitch.me/movies");
