@@ -177,14 +177,14 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
         const list = document.querySelector('h1').innerText.toLowerCase();
         const keyword = document.querySelector("#searchKeyword").value;
         (list.includes('discover') === true) ?
-            await renderMovies(await fetchMoviesListFromAPI(keyword)) :
+            await renderMovies(await fetchMoviesListFromAPI(keyword), "discover") :
             await renderMovies(await filterMyMovies(await fetchMyMovies(), keyword));
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
 })
 
-// MODAL: UPDATE
+// MODAL: UPDATE MODAL INFORMATION
 const addModalEffect = ()=>{
     document.querySelectorAll('.modalBtn').forEach(btn => {
         btn.addEventListener('click', async (e)=>{
@@ -192,6 +192,5 @@ const addModalEffect = ()=>{
             console.log(movie);
             await updateModal(movie)
         })
-        // await updateModal(movie);
     })
 }
