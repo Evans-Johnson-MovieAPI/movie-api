@@ -94,7 +94,12 @@ const fetchMoviesListFromAPI = async (keyword = "top") => {
     try {
         const res = await fetch(`https://www.omdbapi.com?s=${keyword}&apikey=thewdb`);
         const data = await res.json();
-        return data.Search;
+        let detailedList=[];
+        for (let i = 0; i < data.Search.length; i++) {
+            let movie = await fetchMovieFromAPI(data.Search[i].imdbID);
+            detailedList.push(movie)
+        }
+        return detailedList;
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -122,16 +127,17 @@ const renderMovies = async (movies, list) => {
     const titles = document.querySelector('#banner');
     titles.innerHTML = (list === "discover") ? "<h1>Discover Movies</h1>" : "<h1>My Movies</h1>"
     cards.innerHTML = ""
-    movies.forEach(({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) => {
+    console.log(movies);
+    movies.forEach(movie => {
         cards.innerHTML += `
-        <div class="card" style="width: 15rem;" id="${imdbID}">
-              <img src=${Poster} class="card-img-top" alt="...">
+        <div class="card" style="width: 15rem;" id="${movie.imdbID}">
+              <img src=${movie.Poster} class="card-img-top" alt="...">
               <div class="card-body">
-                    <h5 class="card-title">${Title}</h5>
-                    <span style="font-size: 0.7em">${Rated}</span>
-                    <p class="card-text" style="font-size: 0.7em">Genre: ${Genre}</span></p>
+                    <h5 class="card-title">${movie.Title}</h5>
+                    <span style="font-size: 0.7em">${movie.Rated}</span>
+                    <p class="card-text" style="font-size: 0.7em">Genre: ${movie.Genre}</span></p>
                     <!-- Button trigger modal -->
-                    <button type="button" id="${imdbID}" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
+                    <button type="button" id="${movie.imdbID}" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
                       View Details
                     </button>
             </div>
