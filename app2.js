@@ -2,7 +2,7 @@
 
 // FETCH FUNCTION: Returns Array
 // PROTOTYPE: fetchMyMovies();
-const fetchMyMovies = async()=>{
+const fetchMyMovies = async () => {
     try {
         const res = await fetch("https://grass-orchid-breath.glitch.me/movies");
         const data = await res.json();
@@ -16,8 +16,8 @@ const fetchMyMovies = async()=>{
 // POST FUNCTION: Add a movie to My Movies DB, using imdbId
 // RUNS: fetchMovieFromAPI(id) & fetchMyMovies()
 // PROTOTYPE: postToMyMovies('tt0104431')
-const postToMyMovies = async (id)=>{
-    try{
+const postToMyMovies = async (id) => {
+    try {
         const movie = await fetchMovieFromAPI(id);
         fetch("https://grass-orchid-breath.glitch.me/movies", {
             method: 'POST',
@@ -35,7 +35,7 @@ const postToMyMovies = async (id)=>{
 // RUNS: fetchMyMovies()
 // PROTOTYPE: matchMyMovie(movie);
 const patchMyMovie = (movie) => {
-    try{
+    try {
         fetch(`https://grass-orchid-breath.glitch.me/movies/${movie.id}`, {
             method: 'PATCH',
             headers: {
@@ -52,7 +52,7 @@ const patchMyMovie = (movie) => {
 // RUNS: fetchMyMovies()
 // PROTOTYPE: deleteMyMovie(id);
 const deleteMyMovie = (id) => {
-    try{
+    try {
         fetch(`https://grass-orchid-breath.glitch.me/movies/${id}`, {
             method: 'DELETE',
         }).then(fetchMyMovies);
@@ -62,20 +62,26 @@ const deleteMyMovie = (id) => {
 }
 
 // SEARCH FUNCTION: Returns a filtered array
-// PROTOTYPE: searchMovies(array)
-const filterMyMovies = async (movies, keyword) =>{
-    console.log(keyword);
-    console.log(movies);
-    for (let i = 0; i < movies.length; i++){
-        console.log(Object.values(movies[i]))
+// PROTOTYPE: searchMovies(array, keyword)
+const filterMyMovies = async (movies, keyword) => {
+    const filteredMovies = [];
+    for (let i = 0; i < movies.length; i++) {
+        const values = Object.values(movies[i]);
+        values.forEach(value => {
+            value.toString().split(' ').forEach(word => {
+                if (word.toLowerCase().includes(keyword.toLowerCase()))
+                    filteredMovies.push(movies[i]);
+            })
+        })
     }
+    return filteredMovies;
 }
 
 //----------------------- MOVIES  API ------------------------
 
 // FETCH FUNCTION: Returns array, using keyword
 // PROTOTYPE: fetchMoviesListFromAPI('keyword');
-const fetchMoviesListFromAPI = async (keyword = "top")=>{
+const fetchMoviesListFromAPI = async (keyword = "top") => {
     try {
         const res = await fetch(`https://www.omdbapi.com?s=${keyword}&apikey=thewdb`);
         const data = await res.json();
@@ -87,7 +93,7 @@ const fetchMoviesListFromAPI = async (keyword = "top")=>{
 
 // FETCH FUNCTION: Returns a movie object using imdbId
 // PROTOTYPE: fetchMovie('tt0104431');
-const fetchMovieFromAPI = async (input)=>{
+const fetchMovieFromAPI = async (input) => {
     try {
         const res = await fetch(`https://www.omdbapi.com?i=${input}&apikey=thewdb`);
         const data = await res.json();
@@ -124,7 +130,7 @@ const renderMovies = async (movies, list) => {
 }
 
 //----------------------- RENDER MY MOVIES ONLOAD ------------------------
-(async ()=>{
+(async () => {
     await renderMovies(await fetchMyMovies());
 })();
 
@@ -132,26 +138,26 @@ const renderMovies = async (movies, list) => {
 //----------------------- EVENT LISTENERS ------------------------
 
 // NAVBAR: MY MOVIES
-document.querySelector('#myMovies').addEventListener('click', async (e)=>{
+document.querySelector('#myMovies').addEventListener('click', async (e) => {
     e.preventDefault();
     await renderMovies(await fetchMyMovies());
 })
 
 // NAVBAR: DISCOVER MOVIES
-document.querySelector('#discover').addEventListener('click', async (e)=>{
+document.querySelector('#discover').addEventListener('click', async (e) => {
     e.preventDefault();
     await renderMovies(await fetchMoviesListFromAPI(), "discover");
 })
 
 // NAVBAR: SEARCH
-document.querySelector("#searchBtn").addEventListener('click', async (e)=>{
+document.querySelector("#searchBtn").addEventListener('click', async (e) => {
     try {
         e.preventDefault();
         const list = document.querySelector('h1').innerText.toLowerCase();
         const keyword = document.querySelector("#searchKeyword").value;
         (list.includes('discover') === true) ?
             await renderMovies(await fetchMoviesListFromAPI(keyword)) :
-            await filterMyMovies(await fetchMyMovies(), keyword);
+            await renderMovies(await filterMyMovies(await fetchMyMovies(), keyword)) ;
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
