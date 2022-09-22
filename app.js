@@ -201,31 +201,44 @@ const updateModal = async (movie) =>{
 // PROTOTYPE: updateModal(movie);
 const editModal = async (movie)=> {
     // Destructure
-    const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID, id} = movie;
-    movieModal.setAttribute('data-movie', imdbID);
-    modalTitle.textContent = `Edit ${Title}`;
-    modalBody.innerHTML = '';
+    const {Title, Year, Rated, Genre, Plot, Director, Poster, id} = movie;
+    movieModal.setAttribute('data-movie', id);
+    modalTitle.textContent = `Edit Movie`;
     modalBody.innerHTML = `
             <form>
-              <img src=${Poster} class="card-img-top" style="height: 7rem; width: auto; float: left; padding-right:3rem" alt="...">
+              <img src=${Poster} class="card-img-top" style="height: 12rem; width: auto;" alt="...">
               <div class="mb-3">
                 <label for="title" class="form-label">Title: </label>
                 <input class="form-control" id="title" placeholder="${Title}">
               </div>
               <div class="mb-3">
-                <label for="title" class="form-label">Description: </label>
-                <textarea>${Plot}</textarea>
-                <input class="form-control" id="title" placeholder="${Plot}">
+                <label for="year" class="form-label">Year: </label>
+                <input class="form-control" id="year" placeholder="${Year}">
               </div>
-            <span style="font-size: 0.7em">${Rated}</span>
-            <p style="font-size: 0.7em">Genre: ${Genre}</span></p>
-            <p style="clear: left; padding-top:1rem">${Plot}</p>
-            <p>Director: ${Director}</p>
-            <p>Released: ${Year}</p>
+              <div class="mb-3">
+                <label for="rated" class="form-label">Rated: </label>
+                <input class="form-control" id="rated" placeholder="${Rated}">
+              </div>
+              <div class="mb-3">
+                <label for="genre" class="form-label">Genre: </label>
+                <input class="form-control" id="genre" placeholder="${Genre}">
+              </div>
+              <div class="mb-3">
+                <label for="plot" class="form-label">Plot: </label>
+                <input class="form-control" id="plot" placeholder="${Plot}">
+              </div>
+              <div class="mb-3">
+                <label for="director" class="form-label">Director: </label>
+                <input class="form-control" id="director" placeholder="${Director}">
+              </div>
         </div> `
     modalFooter.innerHTML = `
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-    <button type="button" class="btn btn-primary">Save Changes</button>`;
+    <button type="button" id="delete-movie" class="btn btn-danger">Delete Movie</button>
+    <button type="button" id="edit-movie" class="btn btn-success" disabled>Save Changes</button>`;
+    // input fields => for each listener
+    // delete button click
+    // save button click
 }
 
 //----------------------- VARIABLES ------------------------
@@ -285,10 +298,10 @@ const addModalEffect = ()=>{
 }
 
 // MODAL: EDIT BUTTON
-const addEditListener = (id) => {
+const addEditListener =  (id) => {
     let updateBtn = document.querySelector('.update-movie')
-    updateBtn.addEventListener('click', (e) => {
-        console.log(id);
+    updateBtn.addEventListener('click', async (e) => {
+        await editModal(await movies(id));
     })
 }
 
@@ -299,5 +312,6 @@ const addSaveListener = async (id) => {
         e.target;
         addMyMovies(id);
         console.log(id);
+        saveBtn.setAttribute('disabled', 'true');
     })
 }
