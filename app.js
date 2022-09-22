@@ -1,11 +1,7 @@
 //----------------------- LOADER ------------------------
 const loader = document.querySelector('#loader-container')
-const timeout = () => {
-    loader.style.display = 'none';
-}
-window.addEventListener('load', () => {
-    setTimeout(timeout, 1000)
-})
+const load = () => { loader.style.visibility = 'visible'; }
+const timeout = () => { loader.style.visibility = 'hidden'; }
 
 //----------------------- MY MOVIES ------------------------
 
@@ -13,8 +9,10 @@ window.addEventListener('load', () => {
 // PROTOTYPE: fetchMyMovies();
 const fetchMyMovies = async () => {
     try {
+        load();
         const res = await fetch("https://grass-orchid-breath.glitch.me/movies");
         const data = await res.json();
+        timeout();
         return data;
     } catch (e) {
         console.log("Error Occurred :(", e);
@@ -25,9 +23,9 @@ const fetchMyMovies = async () => {
 // POST FUNCTION: Add a movie to My Movies DB, using imdbId
 // RUNS: fetchMovieFromAPI(id) & fetchMyMovies()
 // PROTOTYPE: postToMyMovies('tt0104431')
-const postToMyMovies = async (id) => {
+const addMyMovies = async (id) => {
     try {
-        const movie = await fetchMovieFromAPI(id);
+        const movie = await fetchAPIMovie(id);
         fetch("https://grass-orchid-breath.glitch.me/movies", {
             method: 'POST',
             headers: {
@@ -43,8 +41,9 @@ const postToMyMovies = async (id) => {
 // PATCH FUNCTION: Update a movie, using movie object
 // RUNS: fetchMyMovies()
 // PROTOTYPE: matchMyMovie(movie);
-const patchMyMovie = (movie) => {
+const editMyMovie = (movie) => {
     try {
+        timeout();
         fetch(`https://grass-orchid-breath.glitch.me/movies/${movie.id}`, {
             method: 'PATCH',
             headers: {
@@ -72,14 +71,27 @@ const deleteMyMovie = (id) => {
 
 // SEARCH FUNCTION: Returns a filtered array
 // PROTOTYPE: searchMovies(array, keyword)
-const filterMyMovies = async (movies, keyword) => {
-    const filteredMovies = [];
+const searchMyMovies = async (movies, keyword) => {
+    // // const filteredMovies = [];
+    //
+    // const filteredMovies =  movies.reduce((accumulator, movie) => {
+    //         movie.forEach(keyValue => {
+    //             keyValue.toString().split(' ').forEach(word => {
+    //                 if (word.toLowerCase().includes(keyword.toLowerCase())) {
+    //                     return [...new Set([...accumulator, movie])]
+    //                 }
+    //             })
+    //         })
+    //     return accumulator;
+    //     },[]
+    // );
     for (let i = 0; i < movies.length; i++) {
         const values = Object.values(movies[i]);
         values.forEach(value => {
             value.toString().split(' ').forEach(word => {
-                if (word.toLowerCase().includes(keyword.toLowerCase()))
+                if (word.toLowerCase().includes(keyword.toLowerCase())) {
                     filteredMovies.push(movies[i]);
+                }
             })
         })
     }
@@ -90,16 +102,22 @@ const filterMyMovies = async (movies, keyword) => {
 
 // FETCH FUNCTION: Returns array, using keyword
 // PROTOTYPE: fetchMoviesListFromAPI('keyword');
-const fetchMoviesListFromAPI = async (keyword = "top") => {
+const fetchAPIList = async (keyword = "top") => {
     try {
-        const res = await fetch(`https://www.omdbapi.com?s=${keyword}&apikey=thewdb`);
+        load();
+        const res = await fetch(`https://www.omdbapi.com?s=${keyword.trim()}&apikey=thewdb`);
         const data = await res.json();
-        let detailedList=[];
-        for (let i = 0; i < data.Search.length; i++) {
-            let movie = await fetchMovieFromAPI(data.Search[i].imdbID);
-            detailedList.push(movie)
+        const movies = data.Search;
+
+        // Gather detailed descriptions
+        let detailedMovies = [];
+        for (let i = 0; i < movies.length; i++) {
+            let movie = await fetchAPIMovie(movies[i].imdbID);
+            detailedMovies.push(movie);
         }
-        return detailedList;
+
+        timeout();
+        return detailedMovies;
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -107,12 +125,11 @@ const fetchMoviesListFromAPI = async (keyword = "top") => {
 
 // FETCH FUNCTION: Returns a movie object using imdbId
 // PROTOTYPE: fetchMovie('tt0104431');
-const fetchMovieFromAPI = async (input) => {
+const fetchAPIMovie = async (input) => {
     try {
         const res = await fetch(`https://www.omdbapi.com?i=${input}&apikey=thewdb`);
         const data = await res.json();
-        const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = await data
-        return {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID};
+        return {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = await data;
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -120,24 +137,27 @@ const fetchMovieFromAPI = async (input) => {
 
 //----------------------- REUSABLE FUNCTIONS ------------------------
 
-// RENDER FUNCTION: Render html, using array (optional: list)
+// RENDER CARDS FUNCTION: Render html, using array (optional: list)
 // PROTOTYPE: renderMovies(array) OR renderMovies(array, list)
-const renderMovies = async (movies, list) => {
-    const cards = document.querySelector('#cards');
-    const titles = document.querySelector('#banner');
-    titles.innerHTML = (list === "discover") ? "<h1>Discover Movies</h1>" : "<h1>My Movies</h1>"
-    cards.innerHTML = ""
-    console.log(movies);
+const renderMovies = async (movies) => {
+    const insertCards = document.querySelector('#cards');
+    const insertH1 = document.querySelector('#banner');
+
+    // Reset Page: h1 renamed & cards cleared
+    insertH1.innerHTML = (isDiscover) ? "<h1>Discover Movies</h1>" : "<h1>My Movies</h1>";
+    insertCards.innerHTML = "";
+
+    // Render new cards to page
     movies.forEach(movie => {
-        cards.innerHTML += `
-        <div class="card" style="width: 15rem;" id="${movie.imdbID}">
+        insertCards.innerHTML += `
+        <div data-movie="${movie.imdbID}" class="card" style="width: 15rem;">
               <img src=${movie.Poster} class="card-img-top" alt="...">
               <div class="card-body">
                     <h5 class="card-title">${movie.Title}</h5>
                     <span style="font-size: 0.7em">${movie.Rated}</span>
                     <p class="card-text" style="font-size: 0.7em">Genre: ${movie.Genre}</span></p>
                     <!-- Button trigger modal -->
-                    <button type="button" id="${movie.imdbID}" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
+                    <button data-movie="${movie.imdbID}" type="button" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
                       View Details
                     </button>
             </div>
@@ -147,9 +167,15 @@ const renderMovies = async (movies, list) => {
     addModalEffect();
 }
 
-const updateModal = async ({Title, Year, Rated, Genre, Plot, Director, Poster, imdbID}) =>{
+const updateModal = async (movie) =>{
+    // Destructure
+    const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = movie;
+    // Selectors
     const modalTitle = document.querySelector('#ModalLabel');
     const modalBody = document.querySelector('.modal-body');
+    const movieModal = document.querySelector('#movieModal');
+    // Update Modal Information
+    movieModal.setAttribute('data-movie', imdbID);
     modalTitle.textContent = `${Title}`;
     modalBody.innerHTML = '';
     modalBody.innerHTML = `
@@ -164,9 +190,16 @@ const updateModal = async ({Title, Year, Rated, Genre, Plot, Director, Poster, i
     `
 };
 
+//----------------------- VARIABLES ------------------------
+
+let isDiscover = false;
+const searchBar = document.querySelector("#searchKeyword");
+
+
 
 //----------------------- RENDER MY MOVIES ONLOAD ------------------------
 (async () => {
+    isDiscover = false;
     await renderMovies(await fetchMyMovies());
 })();
 
@@ -176,24 +209,26 @@ const updateModal = async ({Title, Year, Rated, Genre, Plot, Director, Poster, i
 // NAVBAR: MY MOVIES
 document.querySelector('#myMovies').addEventListener('click', async (e) => {
     e.preventDefault();
+    isDiscover = false;
     await renderMovies(await fetchMyMovies());
 })
 
 // NAVBAR: DISCOVER MOVIES
 document.querySelector('#discover').addEventListener('click', async (e) => {
     e.preventDefault();
-    await renderMovies(await fetchMoviesListFromAPI(), "discover");
+    isDiscover = true;
+    await renderMovies(await fetchAPIList());
 })
 
 // NAVBAR: SEARCH
 document.querySelector("#searchBtn").addEventListener('click', async (e) => {
     try {
         e.preventDefault();
-        const list = document.querySelector('h1').innerText.toLowerCase();
-        const keyword = document.querySelector("#searchKeyword").value;
-        (list.includes('discover') === true) ?
-            await renderMovies(await fetchMoviesListFromAPI(keyword), "discover") :
-            await renderMovies(await filterMyMovies(await fetchMyMovies(), keyword));
+        const keyword = searchBar.value;
+        const searchedMovies = (isDiscover) ?
+            await fetchAPIList(keyword) :
+            await searchMyMovies(await fetchMyMovies(), keyword);
+        await renderMovies(searchedMovies);
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -203,7 +238,7 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
 const addModalEffect = ()=>{
     document.querySelectorAll('.modalBtn').forEach(btn => {
         btn.addEventListener('click', async (e)=>{
-            const movie = await fetchMovieFromAPI(btn.id);
+            const movie = await fetchAPIMovie(btn.getAttribute('data-movie'));
             console.log(movie);
             await updateModal(movie)
         })
