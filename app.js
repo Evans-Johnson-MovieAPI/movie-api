@@ -7,10 +7,11 @@ const timeout = () => { loader.style.visibility = 'hidden'; }
 
 // FETCH FUNCTION: Returns Array
 // PROTOTYPE: fetchMyMovies();
-const fetchMyMovies = async () => {
+const fetchMyMovies = async (id) => {
     try {
         load();
-        const res = await fetch("https://grass-orchid-breath.glitch.me/movies");
+        const res = (id) ? await fetch(`https://grass-orchid-breath.glitch.me/movies/${id}`):
+                           await fetch('https://grass-orchid-breath.glitch.me/movies/');
         const data = await res.json();
         timeout();
         return data;
@@ -137,15 +138,16 @@ const renderMovies = async (movies) => {
 
     // Render new cards to page
     movies.forEach(movie => {
+        let id = (isDiscover) ? movie.imdbID : movie.id;
         insertCards.innerHTML += `
-        <div data-movie="${movie.imdbID}" class="card mb-3" style="width: 15rem;">
+        <div data-movie="${id}" class="card mb-3" style="width: 15rem;">
               <img src=${movie.Poster} class="card-img-top" alt="...">
               <div class="card-body">
                     <h5 class="card-title">${movie.Title}</h5>
                     <span style="font-size: 0.7em">${movie.Rated}</span>
                     <p class="card-text" style="font-size: 0.7em">Genre: ${movie.Genre}</span></p>
                     <!-- Button trigger modal -->
-                    <button data-movie="${movie.imdbID}" type="button" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
+                    <button data-movie="${id}" type="button" class="btn btn-primary modalBtn" data-bs-toggle="modal" data-bs-target="#movieModal">
                       View Details
                     </button>
             </div>
@@ -164,6 +166,7 @@ const movieModal = document.querySelector('#movieModal');
 const updateModal = async (movie) =>{
     // Destructure
     const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = movie;
+    let id = (isDiscover) ? null : movie.id;
     // Update Modal Information
     movieModal.setAttribute('data-movie', imdbID);
     modalTitle.textContent = `${Title}`;
@@ -182,14 +185,14 @@ const updateModal = async (movie) =>{
         case true:
             modalFooter.innerHTML = `
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Save Movie</button>`
-            addSaveListener(imdbID)
+            <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Add to My Movies</button>`
+            addSaveListener(imdbID);
             break;
         case false:
             modalFooter.innerHTML = `
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary update-movie" id=${imdbID}>Update Movie</button>`
-            addEditListener(imdbID)
+            <button type="button" class="btn btn-primary update-movie" id=${id}>Edit</button>`
+            addEditListener(id);
             break;
     }
 };
@@ -229,7 +232,7 @@ const editModal = async (movie)=> {
 
 let isDiscover = false;
 const searchBar = document.querySelector("#searchKeyword");
-const movies = async(keyword)=>{ return (isDiscover) ? await fetchAPIList(keyword): await fetchMyMovies() };
+const movies = async(keyword)=>{ return (isDiscover) ? await fetchAPIList(keyword): await fetchMyMovies(keyword) };
 
 
 
@@ -274,9 +277,9 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
 const addModalEffect = ()=>{
     document.querySelectorAll('.modalBtn').forEach(btn => {
         btn.addEventListener('click', async (e)=>{
-            const movie = await fetchAPIMovie(btn.getAttribute('data-movie'));
-            console.log(movie);
-            await updateModal(movie)
+            const id = btn.getAttribute('data-movie');
+            const movie = (isDiscover) ? await fetchAPIMovie(id) : await movies(id);
+            await updateModal(movie);
         })
     })
 }
@@ -284,7 +287,6 @@ const addModalEffect = ()=>{
 // MODAL: EDIT BUTTON
 const addEditListener = (id) => {
     let updateBtn = document.querySelector('.update-movie')
-    // let updateID = updateBtn.getAttribute('id')
     updateBtn.addEventListener('click', (e) => {
         console.log(id);
     })
