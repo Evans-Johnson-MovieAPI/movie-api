@@ -72,19 +72,7 @@ const deleteMyMovie = (id) => {
 // SEARCH FUNCTION: Returns a filtered array
 // PROTOTYPE: searchMovies(array, keyword)
 const searchMyMovies = async (movies, keyword) => {
-    // // const filteredMovies = [];
-    //
-    // const filteredMovies =  movies.reduce((accumulator, movie) => {
-    //         movie.forEach(keyValue => {
-    //             keyValue.toString().split(' ').forEach(word => {
-    //                 if (word.toLowerCase().includes(keyword.toLowerCase())) {
-    //                     return [...new Set([...accumulator, movie])]
-    //                 }
-    //             })
-    //         })
-    //     return accumulator;
-    //     },[]
-    // );
+    const filteredMovies = [];
     for (let i = 0; i < movies.length; i++) {
         const values = Object.values(movies[i]);
         values.forEach(value => {
@@ -95,7 +83,7 @@ const searchMyMovies = async (movies, keyword) => {
             })
         })
     }
-    return filteredMovies;
+    return [...new Set([...filteredMovies])];
 }
 
 //----------------------- MOVIES  API ------------------------
@@ -167,23 +155,18 @@ const renderMovies = async (movies) => {
     addModalEffect();
 }
 
+// Modal Selectors
+const modalTitle = document.querySelector('#ModalLabel');
+const modalBody = document.querySelector('.modal-body');
+const modalFooter = document.querySelector('.modal-footer');
+const movieModal = document.querySelector('#movieModal');
+
 const updateModal = async (movie) =>{
     // Destructure
     const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = movie;
-    // if (!isDiscover) const {imdbID} = movie
-    // Selectors
-    // const addBtn = document.querySelector('.add-btn')
-    // addBtn.setAttribute('id', `${imdbID}`)
-
-    const modalTitle = document.querySelector('#ModalLabel');
-    const modalBody = document.querySelector('.modal-body');
-    const movieModal = document.querySelector('#movieModal');
-    const modalFooter = document.querySelector('.modal-footer')
-
     // Update Modal Information
     movieModal.setAttribute('data-movie', imdbID);
     modalTitle.textContent = `${Title}`;
-    modalBody.innerHTML = '';
     modalBody.innerHTML = `
             <img src=${Poster} class="card-img-top" style="height: 7rem; width: auto; float: left; padding-right:3rem" alt="...">
             <h5>${Title}</h5>
@@ -194,55 +177,66 @@ const updateModal = async (movie) =>{
             <p>Released: ${Year}</p>
         </div>
     `
+    // Customize Modal Footer based on isDiscover
     switch (isDiscover) {
         case true:
             modalFooter.innerHTML = `
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Save Movie</button>
-        `
-            addSaveListener(`${imdbID}`)
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Save Movie</button>`
+            addSaveListener(imdbID)
             break;
         case false:
             modalFooter.innerHTML = `
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary update-movie" id=${imdbID}>Update Movie</button>
-            `
-            addEditListener(`${imdbID}`)
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary update-movie" id=${imdbID}>Update Movie</button>`
+            addEditListener(imdbID)
             break;
     }
-
-
 };
-    const addEditListener = (id) => {
-        let updateBtn = document.querySelector('.update-movie')
-        // let updateID = updateBtn.getAttribute('id')
-        updateBtn.addEventListener('click', (e) => {
 
-            console.log(id)
-        })
+// FUNCTION: Update Modal to Edit Mode, using movie
+// PROTOTYPE: updateModal(movie);
+const editModal = async (movie)=> {
+    // Destructure
+    const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID, id} = movie;
+    movieModal.setAttribute('data-movie', imdbID);
+    modalTitle.textContent = `Edit ${Title}`;
+    modalBody.innerHTML = '';
+    modalBody.innerHTML = `
+            <form>
+              <img src=${Poster} class="card-img-top" style="height: 7rem; width: auto; float: left; padding-right:3rem" alt="...">
+              <div class="mb-3">
+                <label for="title" class="form-label">Title: </label>
+                <input class="form-control" id="title" placeholder="${Title}">
+              </div>
+              <div class="mb-3">
+                <label for="title" class="form-label">Description: </label>
+                <textarea>${Plot}</textarea>
+                <input class="form-control" id="title" placeholder="${Plot}">
+              </div>
+            <span style="font-size: 0.7em">${Rated}</span>
+            <p style="font-size: 0.7em">Genre: ${Genre}</span></p>
+            <p style="clear: left; padding-top:1rem">${Plot}</p>
+            <p>Director: ${Director}</p>
+            <p>Released: ${Year}</p>
+        </div> `
+    modalFooter.innerHTML = `
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="button" class="btn btn-primary">Save Changes</button>`;
+}
 
-    }
-    const addSaveListener = async (id) => {
-
-        let saveBtn = document.querySelector('.save-movie')
-        // let saveID = saveBtn.getAttribute('id')
-        saveBtn.addEventListener('click', (e) => {
-            e.target
-             addMyMovies(id)
-            console.log(id)
-        })
-    }
 //----------------------- VARIABLES ------------------------
 
 let isDiscover = false;
 const searchBar = document.querySelector("#searchKeyword");
+const movies = async(keyword)=>{ return (isDiscover) ? await fetchAPIList(keyword): await fetchMyMovies() };
 
 
 
 //----------------------- RENDER MY MOVIES ONLOAD ------------------------
 (async () => {
     isDiscover = false;
-    await renderMovies(await fetchMyMovies());
+    await renderMovies(await movies());
 })();
 
 
@@ -252,14 +246,14 @@ const searchBar = document.querySelector("#searchKeyword");
 document.querySelector('#myMovies').addEventListener('click', async (e) => {
     e.preventDefault();
     isDiscover = false;
-    await renderMovies(await fetchMyMovies());
+    await renderMovies(await movies());
 })
 
 // NAVBAR: DISCOVER MOVIES
 document.querySelector('#discover').addEventListener('click', async (e) => {
     e.preventDefault();
     isDiscover = true;
-    await renderMovies(await fetchAPIList());
+    await renderMovies(await movies());
 })
 
 // NAVBAR: SEARCH
@@ -268,8 +262,8 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
         e.preventDefault();
         const keyword = searchBar.value;
         const searchedMovies = (isDiscover) ?
-            await fetchAPIList(keyword) :
-            await searchMyMovies(await fetchMyMovies(), keyword);
+            await movies(keyword) :
+            await searchMyMovies(await movies(), keyword);
         await renderMovies(searchedMovies);
     } catch (e) {
         console.log("Error Occurred :(", e);
@@ -284,5 +278,24 @@ const addModalEffect = ()=>{
             console.log(movie);
             await updateModal(movie)
         })
+    })
+}
+
+// MODAL: EDIT BUTTON
+const addEditListener = (id) => {
+    let updateBtn = document.querySelector('.update-movie')
+    // let updateID = updateBtn.getAttribute('id')
+    updateBtn.addEventListener('click', (e) => {
+        console.log(id);
+    })
+}
+
+// MODAL: SAVE TO MY MOVIES BUTTON
+const addSaveListener = async (id) => {
+    let saveBtn = document.querySelector('.save-movie')
+    saveBtn.addEventListener('click', (e) => {
+        e.target;
+        addMyMovies(id);
+        console.log(id);
     })
 }
