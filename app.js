@@ -33,7 +33,9 @@ const addMyMovies = async (id) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(movie),
-        }).then(fetchMyMovies);
+        }).then( async ()=>{
+            await renderMovies(await movies())
+        });
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -51,7 +53,9 @@ const editMyMovie = (movie) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(movie),
-        }).then(fetchMyMovies);
+        }).then( async ()=>{
+            await renderMovies(await movies())
+        });
     } catch (e) {
         console.log(`Error Occurred: ${e}`)
     }
@@ -64,7 +68,9 @@ const deleteMyMovie = (id) => {
     try {
         fetch(`https://grass-orchid-breath.glitch.me/movies/${id}`, {
             method: 'DELETE',
-        }).then(fetchMyMovies);
+        }).then( async ()=>{
+            await renderMovies(await movies())
+        });
     } catch (e) {
         console.log("Error Occurred :(", e);
     }
@@ -205,31 +211,31 @@ const editModal = async (movie)=> {
     movieModal.setAttribute('data-movie', id);
     modalTitle.textContent = `Edit Movie`;
     modalBody.innerHTML = `
-            <form>
+            <form id="editMovieForm">
               <img src=${Poster} class="card-img-top" style="height: 12rem; width: auto;" alt="...">
               <div class="mb-3">
-                <label for="title" class="form-label">Title: </label>
-                <input class="form-control" id="title" placeholder="${Title}">
+                <label for="Title" class="form-label">Title: </label>
+                <input class="form-control" id="Title" placeholder="${Title}">
               </div>
               <div class="mb-3">
-                <label for="year" class="form-label">Year: </label>
-                <input class="form-control" id="year" placeholder="${Year}">
+                <label for="Year" class="form-label">Year: </label>
+                <input class="form-control" id="Year" placeholder="${Year}">
               </div>
               <div class="mb-3">
-                <label for="rated" class="form-label">Rated: </label>
-                <input class="form-control" id="rated" placeholder="${Rated}">
+                <label for="Rated" class="form-label">Rated: </label>
+                <input class="form-control" id="Rated" placeholder="${Rated}">
               </div>
               <div class="mb-3">
-                <label for="genre" class="form-label">Genre: </label>
-                <input class="form-control" id="genre" placeholder="${Genre}">
+                <label for="Genre" class="form-label">Genre: </label>
+                <input class="form-control" id="Genre" placeholder="${Genre}">
               </div>
               <div class="mb-3">
-                <label for="plot" class="form-label">Plot: </label>
-                <input class="form-control" id="plot" placeholder="${Plot}">
+                <label for="Plot" class="form-label">Plot: </label>
+                <input class="form-control" id="Plot" placeholder="${Plot}">
               </div>
               <div class="mb-3">
-                <label for="director" class="form-label">Director: </label>
-                <input class="form-control" id="director" placeholder="${Director}">
+                <label for="Director" class="form-label">Director: </label>
+                <input class="form-control" id="Director" placeholder="${Director}">
               </div>
         </div> `
     modalFooter.innerHTML = `
@@ -237,8 +243,9 @@ const editModal = async (movie)=> {
     <button type="button" id="delete-movie" class="btn btn-danger">Delete Movie</button>
     <button type="button" id="edit-movie" class="btn btn-success" disabled>Save Changes</button>`;
     // input fields => for each listener
-    // delete button click
-    // save button click
+    addInputChanges();
+    addDeleteListener(id);
+    addSaveChangesListener(id);
 }
 
 //----------------------- VARIABLES ------------------------
@@ -311,7 +318,45 @@ const addSaveListener = async (id) => {
     saveBtn.addEventListener('click', (e) => {
         e.target;
         addMyMovies(id);
-        console.log(id);
         saveBtn.setAttribute('disabled', 'true');
     })
+}
+
+const addInputChanges = (id) => {
+    let inputs = document.querySelectorAll('.form-control')
+    let saveEdit = document.querySelector('#edit-movie')
+    inputs.forEach((input) =>{
+        input.addEventListener('input', (e) =>{
+            e.target
+            saveEdit.removeAttribute('disabled')
+        })
+    })
+}
+
+const addDeleteListener = (id) => {
+    let deleteBtn = document.querySelector('#delete-movie');
+    deleteBtn.addEventListener('click', async (e)=>{
+        let userConfirm = confirm(`Are you sure you want to delete this movie?`);
+        if (userConfirm) await deleteMyMovie(id);
+    })
+}
+
+const addSaveChangesListener = (id) => {
+    const saveBtn = document.querySelector('#edit-movie');
+    saveBtn.addEventListener('click', async (e)=>{
+        let newObj = await grabInputs(id);
+        editMyMovie(newObj);
+    })
+}
+
+const grabInputs = async (id) => {
+    const inputs = document.querySelectorAll('.form-control');
+    let newMovieEdits = {};
+    newMovieEdits['id'] = id;
+    inputs.forEach(input =>{
+        if (!!input.value) {
+            newMovieEdits[`${input.id}`] = `${input.value}`;
+        }
+    })
+    return newMovieEdits;
 }
