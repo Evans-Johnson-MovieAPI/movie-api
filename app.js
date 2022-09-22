@@ -150,7 +150,7 @@ const renderMovies = async (movies) => {
     // Render new cards to page
     movies.forEach(movie => {
         insertCards.innerHTML += `
-        <div data-movie="${movie.imdbID}" class="card" style="width: 15rem;">
+        <div data-movie="${movie.imdbID}" class="card mb-3" style="width: 15rem;">
               <img src=${movie.Poster} class="card-img-top" alt="...">
               <div class="card-body">
                     <h5 class="card-title">${movie.Title}</h5>
@@ -170,10 +170,16 @@ const renderMovies = async (movies) => {
 const updateModal = async (movie) =>{
     // Destructure
     const {Title, Year, Rated, Genre, Plot, Director, Poster, imdbID} = movie;
+    // if (!isDiscover) const {imdbID} = movie
     // Selectors
+    // const addBtn = document.querySelector('.add-btn')
+    // addBtn.setAttribute('id', `${imdbID}`)
+
     const modalTitle = document.querySelector('#ModalLabel');
     const modalBody = document.querySelector('.modal-body');
     const movieModal = document.querySelector('#movieModal');
+    const modalFooter = document.querySelector('.modal-footer')
+
     // Update Modal Information
     movieModal.setAttribute('data-movie', imdbID);
     modalTitle.textContent = `${Title}`;
@@ -188,8 +194,44 @@ const updateModal = async (movie) =>{
             <p>Released: ${Year}</p>
         </div>
     `
-};
+    switch (isDiscover) {
+        case true:
+            modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Save Movie</button>
+        `
+            addSaveListener(`${imdbID}`)
+            break;
+        case false:
+            modalFooter.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary update-movie" id=${imdbID}>Update Movie</button>
+            `
+            addEditListener(`${imdbID}`)
+            break;
+    }
 
+
+};
+    const addEditListener = (id) => {
+        let updateBtn = document.querySelector('.update-movie')
+        // let updateID = updateBtn.getAttribute('id')
+        updateBtn.addEventListener('click', (e) => {
+
+            console.log(id)
+        })
+
+    }
+    const addSaveListener = async (id) => {
+
+        let saveBtn = document.querySelector('.save-movie')
+        // let saveID = saveBtn.getAttribute('id')
+        saveBtn.addEventListener('click', (e) => {
+            e.target
+             addMyMovies(id)
+            console.log(id)
+        })
+    }
 //----------------------- VARIABLES ------------------------
 
 let isDiscover = false;
