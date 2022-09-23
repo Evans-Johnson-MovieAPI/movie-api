@@ -34,7 +34,8 @@ const addMyMovies = async (id) => {
             },
             body: JSON.stringify(movie),
         }).then( async ()=>{
-            await renderMovies(await movies())
+            isDiscover = false;
+            await renderMovies(await movies());
         });
     } catch (e) {
         console.log("Error Occurred :(", e);
@@ -191,7 +192,7 @@ const updateModal = async (movie) =>{
         case true:
             modalFooter.innerHTML = `
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary save-movie " id=${imdbID}>Add to My Movies</button>`
+            <button type="button" class="btn btn-primary save-movie" data-bs-dismiss="modal" id=${imdbID}>Add to My Movies</button>`
             addSaveListener(imdbID);
             break;
         case false:
@@ -240,8 +241,8 @@ const editModal = async (movie)=> {
         </div> `
     modalFooter.innerHTML = `
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-    <button type="button" id="delete-movie" class="btn btn-danger">Delete Movie</button>
-    <button type="button" id="edit-movie" class="btn btn-success" disabled>Save Changes</button>`;
+    <button type="button" id="delete-movie" class="btn btn-danger" data-bs-dismiss="modal">Delete Movie</button>
+    <button type="button" id="edit-movie" class="btn btn-success" data-bs-dismiss="modal" disabled>Save Changes</button>`;
     // input fields => for each listener
     addInputChanges();
     addDeleteListener(id);
@@ -284,6 +285,7 @@ document.querySelector("#searchBtn").addEventListener('click', async (e) => {
     try {
         e.preventDefault();
         const keyword = searchBar.value;
+        searchBar.value = "";
         const searchedMovies = (isDiscover) ?
             await movies(keyword) :
             await searchMyMovies(await movies(), keyword);
@@ -317,8 +319,8 @@ const addSaveListener = async (id) => {
     let saveBtn = document.querySelector('.save-movie')
     saveBtn.addEventListener('click', (e) => {
         e.target;
+        let userConfirm = confirm(`Add this movie?`);
         addMyMovies(id);
-        saveBtn.setAttribute('disabled', 'true');
     })
 }
 
