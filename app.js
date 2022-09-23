@@ -3,7 +3,7 @@ const loader = document.querySelector('#loader-container')
 const load = () => { loader.style.visibility = 'visible'; }
 const timeout = () => { loader.style.visibility = 'hidden'; }
 
-//----------------------- MY MOVIES ------------------------
+//----------------------- MY MOVIES: PROJECT REQUIREMENTS ------------------------
 
 // FETCH FUNCTION: Returns Array
 // PROTOTYPE: fetchMyMovies();
@@ -365,8 +365,12 @@ const grabInputs = async (id) => {
     return newMovieEdits;
 }
 
+//----------------------- DARK MODE ------------------------
 
-const isDarkMode = () => {
+// FUNCTION: Change style of page
+// PROTOTYPE: darkMode();
+
+const darkMode = () => {
     document.querySelectorAll("html *, .card-body").forEach(element=> element.classList.toggle('bg-primary'));
     document.querySelectorAll("h1, p, h2, h5, span, a, #movieModal").forEach(element => element.classList.toggle('text-white'));
     document.querySelectorAll('button, input').forEach(btn => btn.classList.toggle('btn-outline-light'));
@@ -374,5 +378,6 @@ const isDarkMode = () => {
     document.querySelectorAll('.card, .modal-content, .dropdown-menu, hr').forEach(card => card.classList.toggle('border-light'));
 }
 
+// Event Listener
 const darkModeToggle = document.querySelector('.slider');
-darkModeToggle.addEventListener('click', isDarkMode);
+darkModeToggle.addEventListener('click', darkMode);
