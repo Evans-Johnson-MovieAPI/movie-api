@@ -212,8 +212,10 @@ const editModal = async (movie)=> {
     movieModal.setAttribute('data-movie', id);
     modalTitle.textContent = `Edit Movie`;
     modalBody.innerHTML = `
+            <div class="text-center">
+                <img src=${Poster} class="card-img-top" style="height: 17rem; width: auto;" alt="...">
+            </div>
             <form id="editMovieForm">
-              <img src=${Poster} class="card-img-top" style="height: 12rem; width: auto;" alt="...">
               <div class="mb-3">
                 <label for="Title" class="form-label">Title: </label>
                 <input class="form-control" id="Title" placeholder="${Title}">
@@ -362,3 +364,15 @@ const grabInputs = async (id) => {
     })
     return newMovieEdits;
 }
+
+
+const isDarkMode = () => {
+    document.querySelectorAll("html *, .card-body").forEach(element=> element.classList.toggle('bg-primary'));
+    document.querySelectorAll("h1, p, h2, h5, span, a, #movieModal").forEach(element => element.classList.toggle('text-white'));
+    document.querySelectorAll('button, input').forEach(btn => btn.classList.toggle('btn-outline-light'));
+    document.querySelector('#searchBtn').classList.toggle('bg-light');
+    document.querySelectorAll('.card, .modal-content, .dropdown-menu, hr').forEach(card => card.classList.toggle('border-light'));
+}
+
+const darkModeToggle = document.querySelector('.slider');
+darkModeToggle.addEventListener('click', isDarkMode);
